@@ -1,0 +1,66 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                         String        @id @default(uuid())
+  username                   String        @unique
+  email                      String        @unique
+  password                   String
+  isVerified                 Boolean       @default(true)
+  isWorker                   Boolean       @default(false)
+  profilePicture             String        @default("https://i.pinimg.com/564x/58/79/29/5879293da8bd698f308f19b15d3aba9a.jpg") @db.Text
+  userDescription            String        @default("Lets join hands to make earth green.") @db.Text
+  city                       String        @default("")
+  state                      String        @default("")
+  totalPointsEarned          Int           @default(0)
+  forgotPasswordToken        String?       @db.Text
+  forgotPasswordTokenExpiry  String?
+  verifyToken                String?       @db.Text
+  verifyTokenExpiry          DateTime?
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+  wasteDumped                WasteDumped[]
+  coupons                    Coupon[]
+
+  @@map("users")
+}
+
+model WasteDumped {
+  id             String    @id @default(uuid())
+  wasteNameByAi  String?
+  wasteType      String?
+  wastePoints    Int       @default(0)
+  isRecyleable   Boolean   @default(false)
+  day            DateTime  @default(now())
+  location       String    @default("London, United Kingdom") @db.Text
+  latitude       Float?
+  longitude      Float?
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+
+  @@index([userId])
+  @@map("waste_dumped")
+}
+
+model Coupon {
+  id         String    @id @default(uuid())
+  service    String
+  discount   String
+  code       String
+  expiryDate DateTime
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@map("coupons")
+}
